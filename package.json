@@ -1,0 +1,30 @@
+{
+  "main": "server.js",
+  "scripts": {
+    "start": "concurrently \"npm run dev\" \"npm run client\"",
+    "dev": "nodemon server.js",
+    "server": "node server.js",
+    "client": "npm start --prefix frontend",
+    "build": "npm install && cd frontend && npm install && npm run build"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ioredis": "^5.4.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.4",
+    "react-slick": "^0.30.3",
+    "redis": "^4.7.0",
+    "slick-carousel": "^1.8.1"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "imagemin-cli": "^8.0.0",
+    "nodemon": "^3.1.7"
+  }
+}
