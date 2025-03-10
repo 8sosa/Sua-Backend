@@ -17,7 +17,12 @@ const app = express();
 connectDB();
 
 // Redis client setup
-const client = redis.createClient();
+const client = redis.createClient({
+    url: process.env.REDIS_URL, // Use remote Redis URL
+    socket: {
+        tls: process.env.REDIS_URL.startsWith("rediss://") ? {} : undefined, // Enable TLS for secure connections
+    }
+});
 
 client.on('error', (err) => console.error('Redis error:', err));
 client.on('connect', () => console.log('Redis client connected.'));
