@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const redis = require('redis');
+const Redis = require('ioredis');
 const crypto = require('crypto');
 const connectDB = require('./config/db');
 const cors = require('cors');
@@ -17,12 +17,9 @@ const app = express();
 connectDB();
 
 // Redis client setup
-const client = redis.createClient({
-    url: process.env.REDIS_URL, // Use remote Redis URL
-    socket: {
-        tls: process.env.REDIS_URL.startsWith("rediss://") ? {} : undefined, // Enable TLS for secure connections
-    }
-});
+const client = new Redis(process.env.REDIS_URL, {
+    tls: process.env.REDIS_URL.startsWith('rediss://') ? {} : undefined, // Enable TLS if using a secure Redis URL
+  });
 
 client.on('error', (err) => console.error('Redis error:', err));
 client.on('connect', () => console.log('Redis client connected.'));
