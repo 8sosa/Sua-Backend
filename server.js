@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const connectDB = require('./config/db');
 const cors = require('cors');
 const sessionMiddleware = require('./Middleware/session');
+const redisClient = require('./Middleware/redisConnect');
 
 const adminRoutes = require('./Routes/adminRoutes');
 const productRoutes = require('./Routes/productRoutes');
@@ -16,28 +17,14 @@ const sessionRoute = require('./Routes/sessionRoute');
 const app = express();
 connectDB();
 
-// Redis client setup
-const client = new Redis(process.env.REDIS_URL, {
-    tls: process.env.REDIS_URL.startsWith('rediss://') ? {} : undefined, // Enable TLS if using a secure Redis URL
-  });
-
-client.on('error', (err) => console.error('Redis error:', err));
-client.on('connect', () => console.log('Redis client connected.'));
-client.on('ready', () => console.log('Redis client is ready.'));
-
-(async () => {
-    try {
-        await client.connect();
-        console.log('Redis client connected successfully.');
-    } catch (error) {
-        console.error('Error connecting to Redis:', error);
-    }
-})();
-
-// Middleware to validate session and generate new session ID if expired or missing
 app.use(async (req, res, next) => {
-    if (!client.isOpen) {
-        await client.connect(); // Reconnect if the client is closed
+    // Check if the Redis client is connected (optional check)
+    if (!redisClient.status || redisClient.status !== 'ready') {
+        try {
+            await redisClient.connect();
+        } catch (error) {
+            console.error('Error reconnecting to Redis:', error);
+        }
     }
 
     let cookies = req.headers.cookie;
