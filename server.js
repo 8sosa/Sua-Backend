@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const Redis = require('ioredis');
 const crypto = require('crypto');
 const connectDB = require('./config/db');
 const cors = require('cors');
@@ -17,16 +16,8 @@ const sessionRoute = require('./Routes/sessionRoute');
 const app = express();
 connectDB();
 
+// Session middleware using redisClient (no extra connection calls)
 app.use(async (req, res, next) => {
-    // Check if the Redis client is connected (optional check)
-    if (!redisClient.status || redisClient.status !== 'ready') {
-        try {
-            await redisClient.connect();
-        } catch (error) {
-            console.error('Error reconnecting to Redis:', error);
-        }
-    }
-
     let cookies = req.headers.cookie;
     let sessionId = null;
 
@@ -43,10 +34,15 @@ app.use(async (req, res, next) => {
         const expiry = 2 * 60 * 60; // 2 hours in seconds
 
         try {
+            // Use setex (all lowercase) for ioredis
             await redisClient.setex(sessionId, expiry, JSON.stringify({ createdAt: Date.now() }));
-            res.cookie('sessionId', sessionId, { httpOnly: true,secure: process.env.NODE_ENV === 'production', // Only secure in production
-            sameSite: 'None', maxAge: expiry * 10000 });
-            } catch (error) {
+            res.cookie('sessionId', sessionId, { 
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production', // Only secure in production
+                sameSite: 'None', 
+                maxAge: expiry * 1000  // Convert seconds to milliseconds
+            });
+        } catch (error) {
             console.error('Redis error:', error);
             return res.status(500).json({ message: 'Failed to create session.' });
         }
@@ -63,7 +59,8 @@ app.use(sessionMiddleware);
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true,
-  }));
+}));
+
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
