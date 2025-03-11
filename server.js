@@ -61,6 +61,15 @@ app.use(cors({
     credentials: true,
 }));
 
+// Serve static files from the build folder
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Catch-all route: for any route not handled by your API, serve index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
