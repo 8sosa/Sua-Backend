@@ -153,7 +153,7 @@ const paymentCtrl = {
         {
           email, // Donor's email
           amount: donationAmount * 100, // Amount in kobo (assuming amount is in Naira)
-          callback_url: `http://localhost:${CLIENT}/order/verify-donation`, // Update callback URL as necessary
+          callback_url: `https://she-unites-africa.onrender.com/order/verify-donation`, // Update callback URL as necessary
           metadata: {
             donationId: donation._id,
             dedication,

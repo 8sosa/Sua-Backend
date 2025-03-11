@@ -57,7 +57,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(sessionMiddleware);
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'https://she-unites-africa.onrender.com',
     credentials: true,
 }));
 
