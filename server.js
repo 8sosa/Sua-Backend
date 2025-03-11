@@ -43,7 +43,7 @@ app.use(async (req, res, next) => {
         const expiry = 2 * 60 * 60; // 2 hours in seconds
 
         try {
-            await client.setEx(sessionId, expiry, JSON.stringify({ createdAt: Date.now() }));
+            await redisClient.setEx(sessionId, expiry, JSON.stringify({ createdAt: Date.now() }));
             res.cookie('sessionId', sessionId, { httpOnly: true,secure: process.env.NODE_ENV === 'production', // Only secure in production
             sameSite: 'None', maxAge: expiry * 10000 });
             } catch (error) {
