@@ -62,6 +62,13 @@ app.use(cors({
     credentials: true,
 }));
 
+// API Routes - These should be defined before static files/catch-all route
+app.use('/api/admin', adminRoutes);
+app.use('/api/products', productRoutes);
+app.use('/cart', cartRoutes);
+app.use('/order/', checkoutRoutes);
+app.use('/api/session', sessionRoute);
+
 // Serve static files from the build folder
 app.use(express.static(path.join(__dirname, 'build')));
 
@@ -69,14 +76,6 @@ app.use(express.static(path.join(__dirname, 'build')));
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
-
-
-// Routes
-app.use('/api/admin', adminRoutes);
-app.use('/api/products', productRoutes);
-app.use('/cart', cartRoutes);
-app.use('/order/', checkoutRoutes);
-app.use('/api/session', sessionRoute);
 
 // Start the server
 const PORT = process.env.PORT || 5000;
