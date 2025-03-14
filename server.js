@@ -13,6 +13,7 @@ const productRoutes = require('./Routes/productRoutes');
 const cartRoutes = require('./Routes/cartRoutes');
 const checkoutRoutes = require('./Routes/checkoutRoutes');
 const sessionRoute = require('./Routes/sessionRoute');
+const formRoute = require('./Routes/formRoutes');
 
 const app = express();
 connectDB();
@@ -68,6 +69,7 @@ app.use('/api/products', productRoutes);
 app.use('/cart', cartRoutes);
 app.use('/order/', checkoutRoutes);
 app.use('/api/session', sessionRoute);
+app.use('/api/form', formRoute);
 
 // Serve static files from the build folder
 app.use(express.static(path.join(__dirname, 'build')));
