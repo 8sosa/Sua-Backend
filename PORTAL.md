@@ -7,8 +7,8 @@ Classbook is the Violet Care Foundation learning portal (frontend: `/classbook` 
 | Role | Can |
 | --- | --- |
 | `admin` | Manage accounts and cohorts, post announcements to everyone, everything a teacher can do in any cohort |
-| `teacher` | In the cohorts assigned to them: upload materials, set assignments and download hand-ins, schedule tests, enter and publish scores, post announcements |
-| `student` | In their own cohort: download materials, hand in assignments, see tests and announcements, see their own published results |
+| `teacher` | In the cohorts assigned to them: upload materials, set assignments and download hand-ins, post announcements |
+| `student` | In their own cohort: download materials, hand in assignments, see announcements |
 
 Portal accounts (`PortalUser`) are separate from the shop `Admin` accounts, and portal tokens carry `kind: "portal"` so the two can't be swapped.
 
@@ -44,7 +44,5 @@ All routes except `POST /auth/login` need `Authorization: Bearer <token>`.
 - `GET /cohorts` · `POST /cohorts` (admin) · `DELETE /cohorts/:id` (admin)
 - `GET|POST /users`, `PATCH /users/:id`, `POST /users/:id/reset-password` (admin) · `GET /students` (staff)
 - `GET|POST /materials`, `GET /materials/:id/file`, `DELETE /materials/:id`
-- `GET|POST /tests`, `DELETE /tests/:id`
 - `GET|POST /assignments`, `DELETE /assignments/:id`, `POST|DELETE /assignments/:id/submission` (student), `GET /assignments/:id/submissions` (staff), `GET /submissions/:id/file`
 - `GET|POST /announcements`, `DELETE /announcements/:id`
-- `GET|PUT /gradebook`, `POST /gradebook/publish` (staff) · `GET /results` (student)
