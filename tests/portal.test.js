@@ -18,7 +18,7 @@ const login = async (email, password = 'password123') => {
 };
 const as = (token) => ({ Authorization: `Bearer ${token}` });
 
-let adminT, teacherT, studentT, otherStudentT, student;
+let adminT, teacherT, studentT, otherStudentT;
 
 beforeAll(async () => {
   // MONGO_TEST_URI lets you point at an existing mongod; otherwise an in-memory server is started.
@@ -35,9 +35,8 @@ beforeAll(async () => {
   await api().post('/api/portal/cohorts').set(as(adminT)).send({ name: 'Cohort B' }).expect(201);
   await api().post('/api/portal/users').set(as(adminT))
     .send({ name: 'Tola Teacher', email: 'teacher@vcf.org', role: 'teacher', cohorts: ['Cohort A'], subjects: ['Coding'], password: 'password123' }).expect(201);
-  const s = await api().post('/api/portal/users').set(as(adminT))
+  await api().post('/api/portal/users').set(as(adminT))
     .send({ name: 'Sade Student', email: 'student@vcf.org', role: 'student', cohort: 'Cohort A', password: 'password123' }).expect(201);
-  student = s.body.user;
   await api().post('/api/portal/users').set(as(adminT))
     .send({ name: 'Bisi Other', email: 'other@vcf.org', role: 'student', cohort: 'Cohort B', password: 'password123' }).expect(201);
   teacherT = await login('teacher@vcf.org');
@@ -96,9 +95,9 @@ describe('role-based access', () => {
     await api().get('/api/portal/users').set(as(adminT)).expect(200);
   });
 
-  test('students cannot create content or read gradebooks', async () => {
-    await api().post('/api/portal/tests').set(as(studentT)).send({}).expect(403);
-    await api().get('/api/portal/gradebook?cohort=Cohort%20A&subject=Coding&term=T1').set(as(studentT)).expect(403);
+  test('students cannot create content', async () => {
+    await api().post('/api/portal/materials').set(as(studentT)).expect(403);
+    await api().post('/api/portal/assignments').set(as(studentT)).send({}).expect(403);
   });
 
   test('teachers can only post to cohorts they teach', async () => {
@@ -150,37 +149,5 @@ describe('assignments', () => {
     expect(subs.body[0].student.name).toBe('Sade Student');
     await api().get(`/api/portal/submissions/${subs.body[0].id}/file`).set(as(teacherT)).expect(200);
     await api().get(`/api/portal/submissions/${subs.body[0].id}/file`).set(as(otherStudentT)).expect(404);
-  });
-});
-
-describe('gradebook', () => {
-  const key = { cohort: 'Cohort A', subject: 'Coding', term: '2026/2027 Term 1' };
-
-  test('validates marks', async () => {
-    const res = await api().put('/api/portal/gradebook').set(as(teacherT))
-      .send({ ...key, rows: [{ studentId: student.id, ca1: '25', ca2: '10', exam: '40' }] });
-    expect(res.status).toBe(400);
-  });
-
-  test('students only see marks after they are published', async () => {
-    await api().put('/api/portal/gradebook').set(as(teacherT))
-      .send({ ...key, rows: [{ studentId: student.id, ca1: '17', ca2: '18', exam: '41' }] }).expect(200);
-    let results = await api().get('/api/portal/results').set(as(studentT)).expect(200);
-    expect(results.body).toHaveLength(0);
-
-    const pub = await api().post('/api/portal/gradebook/publish').set(as(teacherT)).send(key).expect(200);
-    expect(pub.body.published).toBe(1);
-    results = await api().get('/api/portal/results').set(as(studentT)).expect(200);
-    expect(results.body[0]).toMatchObject({ subject: 'Coding', total: 76 });
-
-    const book = await api().get('/api/portal/gradebook').query(key).set(as(teacherT)).expect(200);
-    expect(book.body.rows[0]).toMatchObject({ name: 'Sade Student', ca1: 17, published: true });
-  });
-
-  test('editing a published mark takes it back to draft', async () => {
-    await api().put('/api/portal/gradebook').set(as(teacherT))
-      .send({ ...key, rows: [{ studentId: student.id, ca1: '19', ca2: '18', exam: '41' }] }).expect(200);
-    const results = await api().get('/api/portal/results').set(as(studentT)).expect(200);
-    expect(results.body).toHaveLength(0);
   });
 });

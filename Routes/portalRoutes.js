@@ -5,7 +5,6 @@ const { singleFile } = require('../utils/portalFiles');
 const auth = require('../Controllers/portal/authCtrl');
 const users = require('../Controllers/portal/usersCtrl');
 const content = require('../Controllers/portal/contentCtrl');
-const grades = require('../Controllers/portal/gradesCtrl');
 
 const router = express.Router();
 
@@ -43,10 +42,6 @@ router.post('/materials', staff, singleFile('file'), content.createMaterial);
 router.get('/materials/:id/file', content.downloadMaterial);
 router.delete('/materials/:id', staff, content.deleteMaterial);
 
-router.get('/tests', content.listAssessments);
-router.post('/tests', staff, content.createAssessment);
-router.delete('/tests/:id', staff, content.deleteAssessment);
-
 router.get('/assignments', content.listAssignments);
 router.post('/assignments', staff, content.createAssignment);
 router.delete('/assignments/:id', staff, content.deleteAssignment);
@@ -58,10 +53,5 @@ router.get('/submissions/:id/file', content.downloadSubmission);
 router.get('/announcements', content.listAnnouncements);
 router.post('/announcements', staff, content.createAnnouncement);
 router.delete('/announcements/:id', staff, content.deleteAnnouncement);
-
-router.get('/gradebook', staff, grades.getGradebook);
-router.put('/gradebook', staff, grades.saveGradebook);
-router.post('/gradebook/publish', staff, grades.publish);
-router.get('/results', student, grades.myResults);
 
 module.exports = router;

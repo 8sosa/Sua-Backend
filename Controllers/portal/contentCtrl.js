@@ -1,5 +1,4 @@
 const Material = require('../../Models/portal/material');
-const Assessment = require('../../Models/portal/assessment');
 const Assignment = require('../../Models/portal/assignment');
 const Submission = require('../../Models/portal/submission');
 const Announcement = require('../../Models/portal/announcement');
@@ -8,7 +7,6 @@ const { saveFile, deleteFile, sendFile } = require('../../utils/portalFiles');
 const { handle, fail, str, isId, isDate } = require('./helpers');
 
 const KINDS = ['Notes', 'Past questions', 'Worksheet', 'Video', 'Other'];
-const today = () => new Date().toISOString().slice(0, 10);
 
 const byName = (u) => (u && u.name) || 'Former staff';
 const ownsOrAdmin = (user, ownerId) => user.role === 'admin' || (ownerId && ownerId.equals(user._id));
@@ -30,10 +28,6 @@ const materialOut = (m) => ({
   id: m._id.toString(), title: m.title, subject: m.subject, kind: m.kind, cohort: m.cohort,
   fileName: m.fileName, mimeType: m.mimeType, size: m.size, createdAt: m.createdAt,
   by: byName(m.uploadedBy), byId: m.uploadedBy?._id?.toString(),
-});
-const assessmentOut = (t) => ({
-  id: t._id.toString(), title: t.title, subject: t.subject, cohort: t.cohort, date: t.date,
-  durationMins: t.durationMins, questions: t.questions, by: byName(t.createdBy), byId: t.createdBy?._id?.toString(),
 });
 const submissionOut = (s) => s && {
   id: s._id.toString(), fileName: s.fileName || null, size: s.size || null, submittedAt: s.updatedAt,
@@ -73,35 +67,6 @@ module.exports = {
     if (!ownsOrAdmin(req.user, m.uploadedBy)) throw fail(403, 'Only the uploader can remove this.');
     await deleteFile(m.fileId);
     await m.deleteOne();
-    res.json({ ok: true });
-  }),
-
-  /* Tests */
-  listAssessments: handle(async (req, res) => {
-    const items = await Assessment.find(cohortFilter(req.user)).sort({ date: 1 }).populate('createdBy', 'name');
-    res.json(items.map(assessmentOut));
-  }),
-
-  createAssessment: handle(async (req, res) => {
-    const cohort = str(req.body.cohort);
-    assertCohort(req.user, cohort);
-    const title = str(req.body.title), subject = str(req.body.subject), date = str(req.body.date);
-    const durationMins = Number(req.body.durationMins), questions = Number(req.body.questions);
-    if (!title) throw fail(400, 'Give the test a title.');
-    if (!subject) throw fail(400, 'Choose a subject.');
-    if (!isDate(date)) throw fail(400, 'Choose a date.');
-    if (date < today()) throw fail(400, 'The date must be today or later.');
-    if (!(durationMins >= 5 && durationMins <= 300)) throw fail(400, 'Duration must be between 5 and 300 minutes.');
-    if (!(questions >= 1 && questions <= 200)) throw fail(400, 'Number of questions must be between 1 and 200.');
-    const t = await Assessment.create({ title, subject, cohort, date, durationMins, questions, createdBy: req.user._id });
-    await t.populate('createdBy', 'name');
-    res.status(201).json(assessmentOut(t));
-  }),
-
-  deleteAssessment: handle(async (req, res) => {
-    const t = await load(Assessment, req.params.id, req.user);
-    if (!ownsOrAdmin(req.user, t.createdBy)) throw fail(403, 'Only the teacher who set this can remove it.');
-    await t.deleteOne();
     res.json({ ok: true });
   }),
 
