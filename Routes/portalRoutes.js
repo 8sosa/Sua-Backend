@@ -6,6 +6,7 @@ const auth = require('../Controllers/portal/authCtrl');
 const users = require('../Controllers/portal/usersCtrl');
 const content = require('../Controllers/portal/contentCtrl');
 const collaboration = require('../Controllers/collaborationCtrl');
+const merchOrder = require('../Controllers/merchOrderCtrl');
 
 const router = express.Router();
 
@@ -40,6 +41,7 @@ router.get('/students', staff, users.listStudents);
 
 router.get('/collaborations', admin, collaboration.list);
 router.patch('/collaborations/:id', admin, collaboration.updateStatus);
+router.get('/merch-orders', admin, merchOrder.list);
 
 router.get('/materials', content.listMaterials);
 router.post('/materials', staff, singleFile('file'), content.createMaterial);

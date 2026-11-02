@@ -86,3 +86,37 @@ describe('collaboration form', () => {
     expect(upd.body.status).toBe('contacted');
   });
 });
+
+describe('merch orders', () => {
+  const Product = require('../Models/product');
+  const Order = require('../Models/order');
+  const customer = { name: 'Bola', email: 'bola@example.com', phone: '+234800', address: '1 Lagos Road' };
+  let tee;
+
+  beforeAll(async () => {
+    delete process.env.PAYSTACK_SECRET_KEY;
+    tee = await Product.create({ productName: 'Unites Tee', price: 15000, quantity: 5 });
+  });
+
+  test('records an order priced from the database', async () => {
+    const res = await api().post('/order/merch').send({ customer, items: [{ productId: tee._id, quantity: 2, price: 1 }] });
+    expect(res.status).toBe(201);
+    const order = await Order.findById(res.body.orderId);
+    expect(order.total).toBe(30000);
+    expect(order.paymentStatus).toBe('pending');
+  });
+
+  test('rejects missing details, empty carts and too many items', async () => {
+    expect((await api().post('/order/merch').send({ items: [{ productId: tee._id, quantity: 1 }] })).status).toBe(400);
+    expect((await api().post('/order/merch').send({ customer, items: [] })).status).toBe(400);
+    expect((await api().post('/order/merch').send({ customer, items: [{ productId: tee._id, quantity: 9 }] })).status).toBe(400);
+    expect((await api().post('/order/merch').send({ customer, items: [{ productId: 'nope', quantity: 1 }] })).status).toBe(400);
+  });
+
+  test('portal admins can list orders', async () => {
+    const admin = await tokenFor('admin@vcf.org');
+    const res = await api().get('/api/portal/merch-orders').set('Authorization', `Bearer ${admin}`);
+    expect(res.status).toBe(200);
+    expect(res.body[0].items[0].productId.productName).toBe('Unites Tee');
+  });
+});
