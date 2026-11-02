@@ -1,6 +1,6 @@
-# Classbook learning portal API
+# Program Portal API (formerly Classbook)
 
-Classbook is the Violet Care Foundation learning portal (frontend: `/classbook` on the She-Unites-Africa site). This backend serves it under `/api/portal`.
+The Program Portal is the Violet Care Foundation learning portal (frontend: `/classbook` on the She-Unites-Africa site). This backend serves it under `/api/portal`.
 
 ## Roles
 
@@ -46,3 +46,8 @@ All routes except `POST /auth/login` need `Authorization: Bearer <token>`.
 - `GET|POST /materials`, `GET /materials/:id/file`, `DELETE /materials/:id`
 - `GET|POST /assignments`, `DELETE /assignments/:id`, `POST|DELETE /assignments/:id/submission` (student), `GET /assignments/:id/submissions` (staff), `GET /submissions/:id/file`
 - `GET|POST /announcements`, `DELETE /announcements/:id`
+- `GET /collaborations` (admin) · `PATCH /collaborations/:id` (admin, body `{ status: "new" | "contacted" | "closed" }`)
+
+## Collaboration requests
+
+The public website's collaboration form posts to `POST /api/form/collaborate` (no sign-in, rate limited to 10 per hour per IP). Required fields: `organization`, `contactName`, `email`, `collaborationType` (one of the values in `Models/collaborationRequest.js`), `message`. Optional: `organizationType`, `website`, `country`, `phone`. Program Portal admins see the requests under **Collaborations**.
