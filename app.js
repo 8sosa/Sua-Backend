@@ -58,11 +58,18 @@ app.set('trust proxy', 1);
 app.use(express.json());
 app.use(cookieParser());
 // app.use(sessionMiddleware);
-// CORS_ORIGINS is a comma-separated list, e.g. to allow Netlify deploy previews.
-const allowedOrigins = (process.env.CORS_ORIGINS || 'https://violetcarefoundation.com')
-    .split(',')
-    .map((o) => o.trim())
-    .filter(Boolean);
+// The production domains (with and without www) are always allowed.
+// CORS_ORIGINS adds more, comma-separated, e.g. Netlify deploy previews.
+const PRODUCTION_ORIGINS = [
+    'https://violetcarefoundation.com',
+    'https://www.violetcarefoundation.com',
+    'https://sheunitesafrica.org',
+    'https://www.sheunitesafrica.org',
+];
+const allowedOrigins = [...new Set([
+    ...PRODUCTION_ORIGINS,
+    ...(process.env.CORS_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean),
+])];
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
