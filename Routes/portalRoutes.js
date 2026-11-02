@@ -5,6 +5,8 @@ const { singleFile } = require('../utils/portalFiles');
 const auth = require('../Controllers/portal/authCtrl');
 const users = require('../Controllers/portal/usersCtrl');
 const content = require('../Controllers/portal/contentCtrl');
+const collaboration = require('../Controllers/collaborationCtrl');
+const merchOrder = require('../Controllers/merchOrderCtrl');
 
 const router = express.Router();
 
@@ -36,6 +38,10 @@ router.post('/users', admin, users.createUser);
 router.patch('/users/:id', admin, users.updateUser);
 router.post('/users/:id/reset-password', admin, users.resetPassword);
 router.get('/students', staff, users.listStudents);
+
+router.get('/collaborations', admin, collaboration.list);
+router.patch('/collaborations/:id', admin, collaboration.updateStatus);
+router.get('/merch-orders', admin, merchOrder.list);
 
 router.get('/materials', content.listMaterials);
 router.post('/materials', staff, singleFile('file'), content.createMaterial);
